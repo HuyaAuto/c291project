@@ -128,7 +128,7 @@ class AutoTransactionPage(object):
 
 	
 	def checkOwnership(self):
-		query = "SELECT * FROM owner where owner_id = " + self.formData["seller_id"] +  " and vehicle_id = " + self.formData["vehicle_id"]  	
+		query = "SELECT * FROM owner where owner_id = " + self.formData["seller_id"] +  " and vehicle_id = " + self.formData["vehicle_id"] + " and is_primary_owner = 'y'"  	
 		rs = session.db.execute_sql(query)	
 		if rs: #seller does own vehicle
 			return True
