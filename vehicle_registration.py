@@ -75,6 +75,7 @@ class VehicleRegPage(object):
 
 			for entry in self.entries:
 				entry.config(state=DISABLED)
+				
 			self.submitButton.config(state=DISABLED)
 
 			self.makeOwnerForm(self.frame)
