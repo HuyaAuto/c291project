@@ -29,7 +29,7 @@ class AutoTransactionPage(object):
 		self.numForms = 0
 		self.nextButton = None
 		
-		self.formText = ["transaction_id", "seller_id","buyer_id", "vehicle_id","s_date","price", "is_primary_owner"]
+		self.formText = ["transaction_id", "seller_id","buyer_id", "vehicle_id","s_date","price"]
         
 		#Create the Entry Forms and display them
 		self.forms = self.makeForm(frame)
@@ -97,8 +97,11 @@ class AutoTransactionPage(object):
 			print("Number of forms: " + str( self.numForms))
 			# make form
 			self.makePersonalForm(self.frame)
-			self.submitButton2 = Button(self.frame, text="Submit Personal Data", command=self.saveAndClear)
-			self.submitButton2.grid(row=50, column=1)
+			self.addOwnerButton.config(state=DISABLED)
+			self.submitButton.config(state=DISABLED)
+
+			for entry in self.entries:
+				entry.config(state=DISABLED)
 
 			found = False
 			for key in self.sin.keys():
@@ -153,19 +156,12 @@ class AutoTransactionPage(object):
 		return button
 
 	def makeentry(self, parent, caption, width, row, column):
-		if caption == "is_primary_owner":	
-			l = Label(parent, text=caption, width=15, justify=RIGHT).grid(row=3,column=2, sticky=E)
-
-		else:
-			Label(parent, text=caption, width=20, justify=RIGHT).grid(row=row,column=column[0])
+		Label(parent, text=caption, width=20, justify=RIGHT).grid(row=row,column=column[0])
 		entry = Entry(parent)
 		if width:
-				entry.config(width=width)
-		if caption == "is_primary_owner":
-			entry.grid(row=3, column=column[1] + 2, sticky=E)
-			entry.config(width=5)		
-		else:		
-			entry.grid(row=row, column=column[1], sticky=E)
+			entry.config(width=width)
+			
+		entry.grid(row=row, column=column[1], sticky=E)
 		return entry
 
 	def makeTitle(self, parent, text, row, column):
@@ -194,7 +190,7 @@ class AutoTransactionPage(object):
 			self.personalEntries.append(self.makeentry(parent, text, 40, baseRow, [0,1]),)
 			baseRow += 1  
 
-		self.nextButton = self.makeButton(self.frame, "Finalize", 10, 50, 2)
+		self.nextButton = self.makeButton(self.frame, "Finalize", 10, 50, 1)
 		if self.numForms > 0:
 			self.nextButton.config(command=self.saveAndClear, text="Next")
 		else:
