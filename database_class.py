@@ -31,9 +31,9 @@ class Database():
 	def passive_update(self, statement):
 
 		try:        
-			curs = self.connection.cursor()
+			#curs = self.connection.cursor()
 			# Execute the desired statement 
-			curs.execute(statement)
+			self.curs.execute(statement)
 			self.connection.commit()
 			return True
 

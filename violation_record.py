@@ -25,6 +25,10 @@ class ViolationRecordPage(object):
 		self.formText = ["ticket_no","violator_no","vehicle_id","office_no","vtype", "vdate", "place", "descriptions"]
 		self.forms = self.makeForm(frame)
 
+		self.formStrings = []
+		for elem in self.formText:
+			self.formStrings.append(StringVar())
+
 		self.pageTitle = self.makeTitle(frame, "Violation Record", 0, 1)
 
 		self.submitButton = Button(frame, text="Submit", command=self.submitCallBack)
@@ -40,19 +44,27 @@ class ViolationRecordPage(object):
 		self.successor = 0
 
 	def submitCallBack(self):
-		n=0
-		for entry in self.entries:
-				self.formData[self.formText[n]] = entry.get()
-				n += 1
+		self.fetchViolationFormData()
+
 		#ticket( ticket_no, violator_no,vehicle_id, office_no,vtype,vdate,place,descriptions )
-		query = "SELECT ticket_no FROM ticket WHERE ticket_no = '" + str(self.formData["ticket_no"] )+ "'"
+		query = "SELECT ticket_no FROM ticket WHERE ticket_no = '" + str(self.formData["ticket_no"] )+ "'"		
+		if ( not self.isInDatabase(query)): # Ticket_no is okay
 		
-		if (self.validateForm(query)): # Ticket_no is okay
-			
-			statement = "insert into ticket values('" + self.formData["ticket_no"] +"', '" +  self.formData["violator_no"]  +"', '" +  self.formData["vehicle_id"] +"', '" +  self.formData["office_no"] +"', '" +  self.formData["vtype"] + "', '" +  self.formData["vdate"] +"', '" +  self.formData["place"] +"', '" +  self.formData["descriptions"] + "')"
-			print(statement)			
-			session.db.passive_update(statement)
-			
+
+			if not self.entries[0].get():
+				print("Please enter a valid ticket_no")
+
+			if not self.entries[1].get():
+				# no driver info given --> default to primary owner
+				query =  "select owner_id from owner where (vehicle_id = " + str(self.entries[2].get()) +  "and is_primary_owner = 'y')"
+				rs = session.db.execute_sql(query)
+				print("Results: " + str(rs))
+
+			#statement = "insert into ticket values('" + self.formData["ticket_no"] +"', '" +  self.formData["violator_no"]  +"', '" +  self.formData["vehicle_id"] +"', '" +  self.formData["office_no"] +"', '" +  self.formData["vtype"] + "', '" +  self.formData["vdate"] +"', '" +  self.formData["place"] +"', '" +  self.formData["descriptions"] + "')"
+			#print(statement)			
+			#session.db.passive_update(statement)
+		
+			self.updateViolation()
 			
 			#print("step 1")
 			#data = (self.formData["ticket_no"], self.formData["violator_no"], self.formData["vehicle_id"], self.formData["office_no"], self.formData["vtype"], self.formData["vdate"], self.formData["place"], self.formData["descriptions"])		 	
@@ -67,14 +79,16 @@ class ViolationRecordPage(object):
 			session.db.connection.commit()
 			self.successor = 0;
 			self.quit()
+		else:
+			print("Error: Ticket_no already exists!")
 			    
-	def validateForm(self, statement):                  
+	def isInDatabase(self, statement):                  
 		rs = session.db.execute_sql(statement)
 		print("rs: "+ str(rs))              
 		if not rs:      
-			print("NONE")           
-			return True
-		else: return False
+			print("Item not In Database")           
+			return False
+		else: return True
 		
 	def makeButton(self, parent, caption, width, row, column):
 		button = Button(parent, text=caption, command=submitCallback)
@@ -82,10 +96,10 @@ class ViolationRecordPage(object):
 		return button
 
 	def makeentry(self, parent, caption, width, row, column):
-		Label(parent, text=caption, width=20, justify=RIGHT).grid(row=row,column=column[0])
+		Label(parent, text=caption, width=15, justify=RIGHT).grid(row=row,column=column[0])
 		entry = Entry(parent)
 		if width:
-				entry.config(width=width)
+			entry.config(width=width)
 		entry.grid(row=row, column=column[1], sticky=E)
 		return entry
 
@@ -104,4 +118,14 @@ class ViolationRecordPage(object):
 	def quit(self):
 		self.frame.destroy()
 
+	def updateViolation(self):
+		print("step 1")
+		data = [(self.formData["ticket_no"], self.formData["violator_no"], self.formData["vehicle_id"], self.formData["office_no"], self.formData["vtype"], self.formData["vdate"], self.formData["place"], self.formData["descriptions"])]		 	
+		print("query: " + str(data))			
+		session.db.curs.executemany("INSERT INTO ticket VALUES(:1, :2, :3, :4, :5, :6, :7, :8)", data )
 
+	def fetchViolationFormData(self):
+		n=0
+		for entry in self.entries:
+			self.formData[self.formText[n]] = entry.get()
+			n += 1
