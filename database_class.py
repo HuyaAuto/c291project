@@ -16,7 +16,7 @@ class Database():
 		#pw = getpass.getpass()
 
 		# The URL we are connnecting to
-		conString=''+"jtdavids" +'/' + "whysoCompe2" +'@gwynne.cs.ualberta.ca:1521/CRS'
+		conString=''+"" +'/' + "" +'@gwynne.cs.ualberta.ca:1521/CRS'
 		
 		self.connection = cx_Oracle.connect(conString)
 
